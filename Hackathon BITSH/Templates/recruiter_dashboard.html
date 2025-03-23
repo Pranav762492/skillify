@@ -110,6 +110,28 @@
         .ignore-button:hover {
             background: #B91C1C;
         }
+        .toggle-ignored {
+            background: #4F46E5;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .toggle-ignored:hover {
+            background: #4338CA;
+        }
+        .toggle-ignored.showing-ignored {
+            background: #059669;
+        }
+        .toggle-ignored.showing-ignored:hover {
+            background: #047857;
+        }
+        .resume-card.ignored {
+            opacity: 0.75;
+            border: 2px solid #EF4444;
+        }
         @media (max-width: 768px) {
             .search-bar {
                 flex-direction: column;
@@ -139,6 +161,7 @@
                         {% endif %}
                     {% endfor %}
                 </select>
+                <button id="toggleIgnored" class="toggle-ignored">Show Ignored</button>
             </div>
         </div>
 
@@ -187,7 +210,9 @@
 
         const searchInput = document.getElementById('searchInput');
         const industryFilter = document.getElementById('industryFilter');
+        const toggleIgnoredBtn = document.getElementById('toggleIgnored');
         const resumeCards = document.querySelectorAll('.resume-card');
+        let showingIgnored = false;
 
         function filterResumes() {
             const searchTerm = searchInput.value.toLowerCase();
@@ -198,11 +223,14 @@
                 const resumeId = card.dataset.id;
                 const content = card.textContent.toLowerCase();
                 const industry = card.dataset.industry;
+                const isIgnored = ignoredResumes.includes(resumeId);
+                
                 const matchesSearch = content.includes(searchTerm);
                 const matchesIndustry = !selectedIndustry || industry === selectedIndustry;
-                const isIgnored = ignoredResumes.includes(resumeId);
+                const matchesIgnoreFilter = showingIgnored ? true : !isIgnored;
 
-                card.style.display = matchesSearch && matchesIndustry && !isIgnored ? 'block' : 'none';
+                card.classList.toggle('ignored', isIgnored);
+                card.style.display = matchesSearch && matchesIndustry && matchesIgnoreFilter ? 'block' : 'none';
             });
         }
 
@@ -215,9 +243,16 @@
                     let ignoredResumes = JSON.parse(localStorage.getItem('ignoredResumes')) || [];
                     ignoredResumes.push(resumeId);
                     localStorage.setItem('ignoredResumes', JSON.stringify(ignoredResumes));
-                    card.style.display = 'none';
+                    filterResumes();
                 }
             });
+        });
+
+        toggleIgnoredBtn.addEventListener('click', function() {
+            showingIgnored = !showingIgnored;
+            this.textContent = showingIgnored ? 'Hide Ignored' : 'Show Ignored';
+            this.classList.toggle('showing-ignored', showingIgnored);
+            filterResumes();
         });
 
         searchInput.addEventListener('input', filterResumes);
