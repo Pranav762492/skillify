@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Job</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #EBF5FF 0%, #E1EFFE 100%);
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #1E3A8A;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        input, textarea, select, button {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+        textarea {
+            height: 8rem;
+            resize: vertical;
+        }
+        button {
+            background: #2563EB;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1D4ED8;
+        }
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .resume-card {
+            margin-bottom: 1rem;
+        }
+        .resume-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        .skill-tag {
+            background: #DBEAFE;
+            color: #1E40AF;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6B7280;
+        }
+        @media (max-width: 768px) {
+            .form-grid, .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .search-bar {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Apply for Job</h1>
+
+        <div class="card">
+            <form id="resumeForm">
+                <div class="form-grid">
+                    <input type="text" name="name" placeholder="Name" required>
+                    <input type="email" name="email" placeholder="Email" required>
+                    <input type="text" name="jobTitle" placeholder="Job Title" required>
+                    <input type="text" name="location" placeholder="Location" required>
+                    <input type="text" name="industry" placeholder="Industry" required>
+                    <input type="text" name="experience" placeholder="Experience" required>
+                </div>
+                <textarea name="coverLetter" placeholder="Cover Letter (optional)"></textarea>
+                <input type="text" name="skills" placeholder="Skills (comma-separated)" required style="margin: 1rem 0;">
+                <button type="submit">Submit Resume</button>
+            </form>
+        </div>
+
+        <div class="search-bar card">
+            <input type="text" id="searchInput" placeholder="Search resumes...">
+            <select id="industryFilter">
+                <option value="">All Industries</option>
+            </select>
+        </div>
+
+        <div id="resumesContainer"></div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        let resumes = [];
+
+        document.getElementById('resumeForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const form = new FormData(e.target);
+            const newResume = {
+                id: Math.random().toString(36).substr(2, 9),
+                name: form.get('name'),
+                email: form.get('email'),
+                jobTitle: form.get('jobTitle'),
+                location: form.get('location'),
+                industry: form.get('industry'),
+                experience: form.get('experience'),
+                coverLetter: form.get('coverLetter'),
+                skills: form.get('skills').split(',').map(s => s.trim()),
+                submittedAt: new Date()
+            };
+            resumes = [newResume, ...resumes];
+            updateIndustryOptions();
+            renderResumes();
+            e.target.reset();
+        });
+
+        function updateIndustryOptions() {
+            const industries = [...new Set(resumes.map(r => r.industry))];
+            document.getElementById('industryFilter').innerHTML = 
+                '<option value="">All Industries</option>' +
+                industries.map(i => `<option value="${i}">${i}</option>`).join('');
+        }
+
+        function handleDelete(id) {
+            if (confirm('Delete this resume?')) {
+                resumes = resumes.filter(r => r.id !== id);
+                updateIndustryOptions();
+                renderResumes();
+            }
+        }
+
+        ['input', 'change'].forEach(event => {
+            document.getElementById('searchInput').addEventListener(event, renderResumes);
+            document.getElementById('industryFilter').addEventListener(event, renderResumes);
+        });
+
+        function renderResumes() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const industry = document.getElementById('industryFilter').value;
+            const filtered = resumes.filter(r => {
+                const searchMatch = r.name.toLowerCase().includes(search) ||
+                    r.jobTitle.toLowerCase().includes(search) ||
+                    r.skills.some(s => s.toLowerCase().includes(search));
+                return searchMatch && (!industry || r.industry === industry);
+            });
+
+            document.getElementById('resumesContainer').innerHTML = filtered.length ? 
+                filtered.map(r => `
+                    <div class="card resume-card">
+                        <div class="resume-header">
+                            <div>
+                                <h3>${r.name}</h3>
+                                <div style="color: #6B7280;">
+                                    <i data-lucide="briefcase"></i> ${r.jobTitle}
+                                </div>
+                            </div>
+                            <button onclick="handleDelete('${r.id}')" style="width: auto;">
+                                <i data-lucide="x"></i>
+                            </button>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i data-lucide="map-pin"></i>${r.location}
+                            </div>
+                            <div class="info-item">
+                                <i data-lucide="building-2"></i>${r.industry}
+                            </div>
+                            <div class="info-item">
+                                <i data-lucide="clock"></i>${r.experience}
+                            </div>
+                        </div>
+                        <div class="skills-list">
+                            ${r.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                        </div>
+                        ${r.coverLetter ? `<p style="color: #4B5563;">${r.coverLetter}</p>` : ''}
+                        <small style="color: #6B7280;">Submitted on: ${r.submittedAt.toLocaleString()}</small>
+                    </div>
+                `).join('') : 
+                '<div class="card" style="text-align: center; color: #6B7280;">No resumes found</div>';
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
