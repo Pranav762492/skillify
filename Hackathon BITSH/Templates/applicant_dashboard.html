@@ -194,6 +194,11 @@
                     <i data-lucide="clock"></i> {{ resume.experience }}
                 </div>
             </div>
+            <div class="skills-list">
+                {% for skill in resume.skills.split(',') %}
+                <span class="skill-tag">{{ skill.strip() }}</span>
+                {% endfor %}
+            </div>
             {% if resume.cover_letter %}
             <pre>{{ resume.cover_letter }}</pre>
             {% endif %}
