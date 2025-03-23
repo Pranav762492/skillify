@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Resume</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #83cff0 0%, #b00b69 100%);
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #1E3A8A;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        input, textarea, select, button {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        button {
+            background: #10B981;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #059669;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Update Resume</h1>
+        <form action="{{ url_for('update_resume', id=resume.id) }}" method="POST">
+            <input type="text" name="name" value="{{ resume.name }}" required>
+            <input type="email" name="email" value="{{ resume.email }}" required>
+            <input type="text" name="job_title" value="{{ resume.job_title }}" required>
+            <input type="text" name="location" value="{{ resume.location }}" required>
+            <input type="text" name="industry" value="{{ resume.industry }}" required>
+            <input type="text" name="experience" value="{{ resume.experience }}" required>
+            <textarea name="cover_letter">{{ resume.cover_letter }}</textarea>
+            <input type="text" name="skills" value="{{ resume.skills }}" required>
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+</body>
+</html>

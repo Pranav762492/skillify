@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruiter Dashboard - Job Portal</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #83cff0 0%, #b00b69 100%);
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #1E3A8A;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        input, select {
+            padding: 0.75rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+        .search-input {
+            flex: 1;
+        }
+        .resume-card {
+            margin-bottom: 1rem;
+        }
+        .resume-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        .skill-tag {
+            background: #DBEAFE;
+            color: #1E40AF;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6B7280;
+        }
+        .logout-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            background: #DC2626;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .logout-button:hover {
+            background: #B91C1C;
+        }
+        .ignore-button {
+            background: #EF4444;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .ignore-button:hover {
+            background: #B91C1C;
+        }
+        @media (max-width: 768px) {
+            .search-bar {
+                flex-direction: column;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('logout') }}" class="logout-button">Logout</a>
+    
+    <div class="container">
+        <h1>Available Resumes</h1>
+
+        <div class="card">
+            <div class="search-bar">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, job title, or skills...">
+                <select id="industryFilter">
+                    <option value="">All Industries</option>
+                    {% set industries = [] %}
+                    {% for resume in resumes %}
+                        {% if resume.industry not in industries %}
+                            {% set _ = industries.append(resume.industry) %}
+                            <option value="{{ resume.industry }}">{{ resume.industry }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div id="resumesContainer">
+            {% for resume in resumes %}
+            <div class="card resume-card" data-id="{{ resume.id }}" data-industry="{{ resume.industry }}">
+                <div class="resume-header">
+                    <div>
+                        <h3>{{ resume.name }}</h3>
+                        <div style="color: #6B7280;">
+                            <i data-lucide="briefcase"></i> {{ resume.job_title }}
+                        </div>
+                        <div style="color: #374151; font-size: 0.875rem;">
+                            <i data-lucide="mail"></i> {{ resume.email }}
+                        </div>
+                    </div>
+                    <button class="ignore-button">Ignore</button>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <i data-lucide="map-pin"></i> {{ resume.location }}
+                    </div>
+                    <div class="info-item">
+                        <i data-lucide="building-2"></i> {{ resume.industry }}
+                    </div>
+                    <div class="info-item">
+                        <i data-lucide="clock"></i> {{ resume.experience }}
+                    </div>
+                </div>
+                <div class="skills-list">
+                    {% for skill in resume.skills.split(',') %}
+                    <span class="skill-tag">{{ skill.strip() }}</span>
+                    {% endfor %}
+                </div>
+                {% if resume.cover_letter %}
+                <pre style="color: #4B5563; background: #F3F4F6; padding: 1rem; border-radius: 0.5rem; white-space: pre-wrap; word-wrap: break-word;">{{ resume.cover_letter }}</pre>
+                {% endif %}
+                <small style="color: #6B7280;">Submitted on: {{ resume.submitted_at.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const searchInput = document.getElementById('searchInput');
+        const industryFilter = document.getElementById('industryFilter');
+        const resumeCards = document.querySelectorAll('.resume-card');
+
+        function filterResumes() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedIndustry = industryFilter.value;
+            const ignoredResumes = JSON.parse(localStorage.getItem('ignoredResumes')) || [];
+
+            resumeCards.forEach(card => {
+                const resumeId = card.dataset.id;
+                const content = card.textContent.toLowerCase();
+                const industry = card.dataset.industry;
+                const matchesSearch = content.includes(searchTerm);
+                const matchesIndustry = !selectedIndustry || industry === selectedIndustry;
+                const isIgnored = ignoredResumes.includes(resumeId);
+
+                card.style.display = matchesSearch && matchesIndustry && !isIgnored ? 'block' : 'none';
+            });
+        }
+
+        document.querySelectorAll('.ignore-button').forEach(button => {
+            button.addEventListener('click', function () {
+                const card = this.closest('.resume-card');
+                const resumeId = card.dataset.id;
+
+                if (confirm("Are you sure you want to ignore this resume?")) {
+                    let ignoredResumes = JSON.parse(localStorage.getItem('ignoredResumes')) || [];
+                    ignoredResumes.push(resumeId);
+                    localStorage.setItem('ignoredResumes', JSON.stringify(ignoredResumes));
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        searchInput.addEventListener('input', filterResumes);
+        industryFilter.addEventListener('change', filterResumes);
+        filterResumes();
+    </script>
+</body>
+</html>
